@@ -4,6 +4,7 @@ import { Button, ButtonLink, buttonClass } from "@/components/ui/button";
 import { createMailtoHref } from "@/lib/studio/format";
 import { getProgress, joinList, listMissingOfferParts } from "@/lib/studio/progress";
 import { CopySummaryButton } from "./copy-summary-button";
+import { ExportWebsiteButton } from "./export-website-button";
 import { PageIntro } from "./page-intro";
 import { Storefront } from "./storefront";
 import { useStudio } from "./studio-provider";
@@ -33,14 +34,18 @@ export function StorefrontScreen() {
           <a className={buttonClass("secondary")} href={mailto}>
             Email draft
           </a>
+          <ExportWebsiteButton />
         </div>
+        <p id="export-note" className="mt-4 max-w-2xl text-sm leading-6 text-ink-soft">
+          Export Website downloads an HTML file to this device. It does not publish the page online.
+        </p>
         {missing.length > 0 ? (
-          <p className="mt-4 text-sm leading-6 text-ink-soft">
+          <p className="mt-2 text-sm leading-6 text-ink-soft">
             Still to add: {joinList(missing)}. The preview stays available while you fill those in.
           </p>
         ) : (
-          <p className="mt-4 text-sm leading-6 text-ink-soft">
-            The required pieces are in place. Printing or emailing uses the text of this draft.
+          <p className="mt-2 text-sm leading-6 text-ink-soft">
+            The required pieces are in place. Printing, emailing, and copying still use this same draft.
           </p>
         )}
       </div>

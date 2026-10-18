@@ -2,13 +2,15 @@
   "name": "microsaas2",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "Service Launch Studio, the first MicroSAAS product.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --import ./test/register.mjs --test src/lib/studio/website-export.test.mts"
   },
   "dependencies": {
     "next": "16.4.2",
