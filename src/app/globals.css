@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-paper: #f3f1ea;
+  --color-paper-deep: #e7e2d6;
+  --color-surface: #fffcf7;
+  --color-ink: #1c1915;
+  --color-ink-soft: #625d55;
+  --color-line: #e3ddd1;
+  --color-pine: #143f38;
+  --color-pine-bright: #1d5a50;
+  --color-pine-soft: #e6f0ed;
+  --color-brass: #7a5a32;
+  --color-brass-soft: #f3eadc;
+  --color-danger: #8d3b32;
+  --color-danger-soft: #f8ebe8;
+  --color-sidebar: #141311;
+  --color-sidebar-muted: #b7b1a6;
+  --color-sidebar-line: #2c2a26;
+  --font-sans: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
+}
+
+html {
+  background: #f3f1ea;
+}
+
+body {
+  background: #f3f1ea;
+  color: #1c1915;
+  font-family: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+}
+
+::selection {
+  background: #d5e6e1;
+  color: #1c1915;
+}
+
+:focus-visible {
+  outline: 2px solid #143f38;
+  outline-offset: 3px;
+}
+
+.studio-sidebar :focus-visible {
+  outline-color: #f6f3ec;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@keyframes studio-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.studio-rise {
+  animation: studio-rise 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.studio-rise-delay {
+  animation-delay: 140ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .studio-rise,
+  .studio-rise-delay {
+    animation: none;
+  }
+}
+
+.hero-wash {
+  background:
+    radial-gradient(ellipse at 90% 0%, rgba(20, 63, 56, 0.08), transparent 42%),
+    radial-gradient(ellipse at 0% 90%, rgba(122, 90, 50, 0.12), transparent 36%),
+    #f3f1ea;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body,
+  html {
+    background: white !important;
+  }
+
+  .studio-main {
+    padding: 0 !important;
+  }
+
+  .print-sheet {
+    border: none !important;
+    box-shadow: none !important;
+  }
+}
+
+@page {
+  margin: 0.6in;
+}
