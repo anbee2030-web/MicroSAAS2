@@ -1,0 +1,13 @@
+---
+description: Commit and push finished work to the existing GitHub repository
+alwaysApply: true
+---
+
+# Push finished work
+
+After a request that changes project files, commit the finished work and push it to the existing GitHub remote.
+
+- Commit only the files for that work. Leave secrets such as `.env` untracked, and say so if they were left out.
+- Use the repository's existing branch. Do not force-push.
+- An explicit "do not commit" or "do not push" in the current request overrides this rule for that request.
+- If the commit or push fails, report the error and do not hide it.
