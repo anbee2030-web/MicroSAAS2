@@ -111,29 +111,73 @@ export function createMailtoHref(offer: ServiceOffer, categoryName: string | nul
   return `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
+const SAFE_EMAIL = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+const SAFE_TEL = /^tel:\+?\d{7,15}$/;
+
 export function isEmail(value: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+  return SAFE_EMAIL.test(value.trim());
 }
 
+/** Contact mailto used by both the editor preview and the downloaded page. */
+export function toMailtoHref(value: string): string | null {
+  const email = value.trim();
+  if (!isEmail(email)) return null;
+  return `mailto:${email}`;
+}
+
+/**
+ * Website href used by both the editor preview and the downloaded page.
+ * An explicit http or https URL keeps that scheme. A missing scheme becomes https.
+ * Other schemes and URLs with credentials are rejected.
+ */
 export function toWebsiteHref(value: string): string | null {
   const trimmed = value.trim();
-  if (!trimmed || /\s/.test(trimmed)) return null;
-  const withProtocol = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  if (!trimmed || trimmed.startsWith("//") || /[\u0000-\u0020"'<>\\]/.test(trimmed)) return null;
+  const hasScheme = /^[a-z][a-z0-9+.-]*:/i.test(trimmed);
+  if (hasScheme && !/^https?:\/\//i.test(trimmed)) return null;
+  const withProtocol = hasScheme ? trimmed : `https://${trimmed}`;
+  let url: URL;
   try {
-    const url = new URL(withProtocol);
-    if (url.protocol !== "http:" && url.protocol !== "https:") return null;
-    if (!url.hostname.includes(".")) return null;
-    return url.toString();
+    url = new URL(withProtocol);
   } catch {
     return null;
   }
+  if (url.username || url.password) return null;
+  if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+  if (!url.hostname.includes(".")) return null;
+  const href = url.toString();
+  if (url.protocol === "http:" && !href.startsWith("http://")) return null;
+  if (url.protocol === "https:" && !href.startsWith("https://")) return null;
+  if (/[\s"'<>]/.test(href)) return null;
+  return href;
 }
 
+/** Phone href used by both the editor preview and the downloaded page. */
 export function toPhoneHref(value: string): string | null {
   const trimmed = value.trim();
   const digits = trimmed.replace(/\D/g, "");
-  if (digits.length < 7) return null;
-  return `tel:${trimmed.replace(/[^\d+]/g, "")}`;
+  if (digits.length < 7 || digits.length > 15) return null;
+  const href = `tel:${trimmed.replace(/[^\d+]/g, "")}`;
+  if (!SAFE_TEL.test(href)) return null;
+  return href;
+}
+
+export interface StorefrontContactLinks {
+  email: string | null;
+  phone: string | null;
+  website: string | null;
+}
+
+export function storefrontContactLinks(contact: {
+  email: string;
+  phone: string;
+  website: string;
+}): StorefrontContactLinks {
+  return {
+    email: toMailtoHref(contact.email),
+    phone: toPhoneHref(contact.phone),
+    website: toWebsiteHref(contact.website),
+  };
 }
 
 export async function copyText(text: string): Promise<boolean> {

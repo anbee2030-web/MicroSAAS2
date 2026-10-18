@@ -77,7 +77,7 @@ test("omits optional fields and does not invent contact links", () => {
   assert.equal(html.includes("cdn."), false);
 });
 
-test("writes validated mailto, tel, and https links", () => {
+test("writes validated mailto, tel, and website links", () => {
   const website = renderStorefrontWebsite(
     draftWith({
       businessName: "Harbor Editing",
@@ -103,8 +103,8 @@ test("writes validated mailto, tel, and https links", () => {
 
   assert.equal(links.includes("mailto:hello@example.com"), true);
   assert.equal(links.includes("tel:+15550100142"), true);
-  assert.equal(links.includes("https://harbor.example/work"), true);
-  assert.equal(links.some((href) => href.startsWith("http://")), false);
+  assert.equal(links.includes("http://harbor.example/work"), true);
+  assert.match(website.html, /href="http:\/\/harbor\.example\/work" target="_blank" rel="noopener noreferrer"/);
   assert.match(website.html, /Writing &amp; editing/);
   assert.match(website.html, /\$120 \/ hour/);
   assert.match(website.html, /One week/);

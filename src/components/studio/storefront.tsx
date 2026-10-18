@@ -1,5 +1,5 @@
 import { cn } from "@/lib/cn";
-import { formatPriceLabel, isEmail, toPhoneHref, toWebsiteHref } from "@/lib/studio/format";
+import { formatPriceLabel, storefrontContactLinks } from "@/lib/studio/format";
 import type { ServiceCategory, ServiceOffer } from "@/lib/studio/types";
 
 function Display({
@@ -37,8 +37,7 @@ export function Storefront({
   const email = offer.contact.email.trim();
   const phone = offer.contact.phone.trim();
   const website = offer.contact.website.trim();
-  const websiteHref = toWebsiteHref(website);
-  const phoneHref = toPhoneHref(phone);
+  const links = storefrontContactLinks(offer.contact);
   const location = offer.contact.location.trim();
 
   return (
@@ -98,8 +97,8 @@ export function Storefront({
           <p className="text-xs font-medium uppercase tracking-[0.16em] text-brass">Contact</p>
           <dl className="mt-3 space-y-2 text-sm">
             <ContactRow label="Email">
-              {email && interactive && isEmail(email) ? (
-                <a className="text-pine underline decoration-brass underline-offset-4" href={`mailto:${email}`}>
+              {email && interactive && links.email ? (
+                <a className="text-pine underline decoration-brass underline-offset-4" href={links.email}>
                   {email}
                 </a>
               ) : (
@@ -107,8 +106,8 @@ export function Storefront({
               )}
             </ContactRow>
             <ContactRow label="Phone">
-              {phone && interactive && phoneHref ? (
-                <a className="text-pine underline decoration-brass underline-offset-4" href={phoneHref}>
+              {phone && interactive && links.phone ? (
+                <a className="text-pine underline decoration-brass underline-offset-4" href={links.phone}>
                   {phone}
                 </a>
               ) : (
@@ -119,12 +118,12 @@ export function Storefront({
               <span className={location ? "text-ink" : "italic text-ink-soft"}>{location || "City or region"}</span>
             </ContactRow>
             <ContactRow label="Website">
-              {website && interactive && websiteHref ? (
+              {website && interactive && links.website ? (
                 <a
                   className="break-all text-pine underline decoration-brass underline-offset-4"
-                  href={websiteHref}
+                  href={links.website}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                 >
                   {website}
                 </a>

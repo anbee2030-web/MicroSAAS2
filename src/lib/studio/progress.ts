@@ -23,15 +23,12 @@ export function getProgress(draft: StudioDocument): StudioProgress {
   const hasPrice = formatMoney(offer.priceAmount, offer.currency) !== null;
   const hasEmail = isEmail(offer.contact.email);
   const included = includedLines(offer);
+  const flags = { hasCategory, hasName, hasDescription, hasPrice, hasEmail };
 
   return {
     category,
-    hasCategory,
-    hasName,
-    hasDescription,
-    hasPrice,
-    hasEmail,
-    offerReady: hasName && hasDescription && hasPrice && hasEmail,
+    ...flags,
+    offerReady: missingOfferParts(flags).length === 0,
     included,
   };
 }
@@ -62,7 +59,9 @@ export function nextStudioStep(progress: StudioProgress): { href: string; label:
   return { href: "/studio/preview", label: "Open the storefront" };
 }
 
-export function listMissingOfferParts(progress: StudioProgress): string[] {
+function missingOfferParts(
+  progress: Pick<StudioProgress, "hasCategory" | "hasName" | "hasDescription" | "hasPrice" | "hasEmail">,
+): string[] {
   const missing: string[] = [];
   if (!progress.hasCategory) missing.push("a service category");
   if (!progress.hasName) missing.push("a business name");
@@ -70,6 +69,10 @@ export function listMissingOfferParts(progress: StudioProgress): string[] {
   if (!progress.hasPrice) missing.push("a price");
   if (!progress.hasEmail) missing.push("an email address");
   return missing;
+}
+
+export function listMissingOfferParts(progress: StudioProgress): string[] {
+  return missingOfferParts(progress);
 }
 
 export function joinList(parts: string[]): string {

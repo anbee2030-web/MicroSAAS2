@@ -8,6 +8,9 @@ import type { StudioDocument } from "./types";
  */
 export const STUDIO_STORAGE_KEY = "microsaas2.service-launch-studio";
 
+/** Snapshot value when localStorage cannot be read. Distinct from an empty draft. */
+export const STORAGE_UNAVAILABLE = "\u0000unavailable";
+
 export function loadStudioDocument(): StudioDocument {
   try {
     const raw = window.localStorage.getItem(STUDIO_STORAGE_KEY);
@@ -62,7 +65,7 @@ export function getStudioSnapshot(): string | null {
   try {
     return window.localStorage.getItem(STUDIO_STORAGE_KEY) ?? "";
   } catch {
-    return "";
+    return STORAGE_UNAVAILABLE;
   }
 }
 

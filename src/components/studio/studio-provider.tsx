@@ -1,7 +1,14 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import { createEmptyDocument, parseStudioDocument } from "@/lib/studio/document";
+import {
+  acceptStorageSnapshot,
+  createDraftMemory,
+  persistDraft,
+  resetDraftMemory,
+  storageConflicts,
+  type DraftMemory,
+} from "@/lib/studio/draft-session";
 import { hasSavedDraft } from "@/lib/studio/progress";
 import {
   clearStudioDocument,
@@ -33,23 +40,34 @@ interface StudioContextValue {
 
 const StudioContext = createContext<StudioContextValue | null>(null);
 
-function draftFromSnapshot(raw: string | null): StudioDocument {
-  if (!raw) return createEmptyDocument();
-  try {
-    return parseStudioDocument(JSON.parse(raw));
-  } catch {
-    return createEmptyDocument();
-  }
-}
+const UNSAVED_NOTICE = "Changes are not saved in this browser.";
 
 export function StudioProvider({ children }: { children: React.ReactNode }) {
-  const raw = useSyncExternalStore(subscribeStudio, getStudioSnapshot, getServerStudioSnapshot);
-  const draft = useMemo(() => draftFromSnapshot(raw), [raw]);
-  const hydrated = raw !== null;
-  const [saveError, setSaveError] = useState(false);
+  const storageSnapshot = useSyncExternalStore(subscribeStudio, getStudioSnapshot, getServerStudioSnapshot);
+  const [memory, setMemory] = useState<DraftMemory>(createDraftMemory);
   const [notice, setNotice] = useState<string | null>(null);
   const [resetOpen, setResetOpen] = useState(false);
-  const saveState: SaveState = saveError ? "error" : draft.updatedAt ? "saved" : "idle";
+  const [announcedConflict, setAnnouncedConflict] = useState<string | null>(null);
+
+  let current = memory;
+  if (storageSnapshot !== null) {
+    const accepted = acceptStorageSnapshot(memory, storageSnapshot);
+    if (accepted !== memory) {
+      current = accepted;
+      setMemory(accepted);
+    }
+  }
+
+  const draft = current.draft;
+  const hydrated = current.loaded;
+  const saveState: SaveState = !current.loaded ? "idle" : current.saveError ? "error" : draft.updatedAt ? "saved" : "idle";
+  const conflict = storageSnapshot !== null && storageConflicts(current, storageSnapshot);
+  if (!conflict && announcedConflict !== null) {
+    setAnnouncedConflict(null);
+  } else if (conflict && storageSnapshot !== announcedConflict) {
+    setAnnouncedConflict(storageSnapshot);
+    setNotice("Another tab updated the saved draft. Your unsaved edits on this tab were kept.");
+  }
 
   useEffect(() => {
     if (!notice) return;
@@ -57,14 +75,20 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
     return () => window.clearTimeout(timeout);
   }, [notice]);
 
-  const write = useCallback((next: StudioDocument, successNotice?: string) => {
-    const ok = saveStudioDocument(next).ok;
-    setSaveError(!ok);
-    if (successNotice || !ok) {
-      setNotice(ok ? successNotice ?? null : "This browser blocked saving the draft.");
-    }
-    return ok;
-  }, []);
+  const write = useCallback(
+    (next: StudioDocument, successNotice?: string) => {
+      const hadError = current.saveError;
+      const result = persistDraft(current, next, (document) => saveStudioDocument(document).ok);
+      setMemory(result.memory);
+      if (result.persisted) {
+        if (successNotice) setNotice(successNotice);
+        else if (hadError) setNotice("Draft saved in this browser.");
+        return;
+      }
+      if (successNotice || !hadError) setNotice(UNSAVED_NOTICE);
+    },
+    [current],
+  );
 
   const selectCategory = useCallback(
     (categoryId: CategoryId) => {
@@ -140,11 +164,12 @@ export function StudioProvider({ children }: { children: React.ReactNode }) {
   }, [draft, write]);
 
   const resetDraft = useCallback(() => {
-    const ok = clearStudioDocument().ok;
+    if (!current.loaded) return;
+    const cleared = clearStudioDocument().ok;
+    setMemory(resetDraftMemory(current, cleared));
     setResetOpen(false);
-    setSaveError(!ok);
-    setNotice(ok ? "Draft removed from this browser." : "This browser blocked clearing the draft.");
-  }, []);
+    setNotice(cleared ? "Draft removed from this browser." : "This browser blocked clearing the draft.");
+  }, [current]);
 
   const requestReset = useCallback(() => {
     if (!hasSavedDraft(draft)) {

@@ -10,7 +10,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --import ./test/register.mjs --test src/lib/studio/website-export.test.mts"
+    "test": "node --experimental-strip-types --import ./test/register.mjs --test src/lib/studio/*.test.mts"
   },
   "dependencies": {
     "next": "16.4.2",

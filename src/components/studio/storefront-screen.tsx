@@ -5,8 +5,8 @@ import { createMailtoHref } from "@/lib/studio/format";
 import { getProgress, joinList, listMissingOfferParts } from "@/lib/studio/progress";
 import { CopySummaryButton } from "./copy-summary-button";
 import { ExportWebsiteButton } from "./export-website-button";
+import { ExportedPagePreview } from "./exported-page-preview";
 import { PageIntro } from "./page-intro";
-import { Storefront } from "./storefront";
 import { useStudio } from "./studio-provider";
 
 export function StorefrontScreen() {
@@ -21,7 +21,7 @@ export function StorefrontScreen() {
         <PageIntro
           eyebrow="03 — Storefront"
           title="This is the page."
-          description="A client-facing view of the offer you just wrote. It updates from the same draft as the editor."
+          description="The page a client would open from the downloaded file. It uses the same draft as the editor."
         />
         <div className="mt-6 flex flex-wrap gap-2">
           <ButtonLink href="/studio/offer" variant="secondary">
@@ -50,7 +50,7 @@ export function StorefrontScreen() {
         )}
       </div>
       <div className="mt-8">
-        <Storefront offer={draft.offer} category={progress.category} variant="full" />
+        <ExportedPagePreview draft={draft} />
       </div>
     </div>
   );

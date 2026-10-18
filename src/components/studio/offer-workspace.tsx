@@ -15,7 +15,7 @@ import { Storefront } from "./storefront";
 import { useStudio } from "./studio-provider";
 
 export function OfferWorkspace() {
-  const { draft, updateOffer, addIncluded, updateIncluded, removeIncluded, saveNow } = useStudio();
+  const { draft, saveState, updateOffer, addIncluded, updateIncluded, removeIncluded, saveNow } = useStudio();
   const offer = draft.offer;
   const progress = getProgress(draft);
   const [panel, setPanel] = useState<"edit" | "preview">("edit");
@@ -52,7 +52,11 @@ export function OfferWorkspace() {
           </Button>
         }
       />
-      <p className="mt-4 text-sm text-ink-soft">Edits are saved in this browser as you type.</p>
+      <p className="mt-4 text-sm text-ink-soft">
+        {saveState === "error"
+          ? "Changes are not saved in this browser. Preview, copy, and export still use this draft. Save draft tries again."
+          : "Edits are saved in this browser as you type."}
+      </p>
 
       <div className="mt-6">
         <OfferChecklist progress={progress} layout="row" />
@@ -298,8 +302,11 @@ export function OfferWorkspace() {
         </form>
 
         <aside className={cn("xl:sticky xl:top-8", panel === "preview" ? "block" : "hidden xl:block")}>
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <p className="text-sm font-medium text-ink">Live preview</p>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-medium text-ink">Editing preview</p>
+              <p className="text-xs leading-5 text-ink-soft">Placeholders fill empty fields here. The storefront shows the downloaded file.</p>
+            </div>
             <div className="flex gap-2">
               <CopySummaryButton size="sm" />
               <ButtonLink href="/studio/preview" variant="secondary" size="sm">

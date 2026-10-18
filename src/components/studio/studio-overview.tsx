@@ -10,7 +10,7 @@ import { PageIntro } from "./page-intro";
 import { useStudio } from "./studio-provider";
 
 export function StudioOverview() {
-  const { draft, requestReset } = useStudio();
+  const { draft, saveState, requestReset } = useStudio();
   const progress = getProgress(draft);
   const next = nextStudioStep(progress);
   const offerStatus = getOfferStatus(draft, progress);
@@ -85,7 +85,16 @@ export function StudioOverview() {
             <DraftRow label="Service" value={progress.category?.name ?? "No service yet"} />
             <DraftRow label="Price" value={formatPriceLabel(draft.offer)} />
             <DraftRow label="Email" value={draft.offer.contact.email.trim() || "No email yet"} />
-            <DraftRow label="Last edit" value={draft.updatedAt ? formatSavedAt(draft.updatedAt) : "Not saved yet"} />
+            <DraftRow
+              label="Last edit"
+              value={
+                saveState === "error"
+                  ? "Not saved in this browser"
+                  : draft.updatedAt
+                    ? formatSavedAt(draft.updatedAt)
+                    : "Not saved yet"
+              }
+            />
           </dl>
           <div className="mt-5">
             <ButtonLink href="/studio/offer" variant="secondary">

@@ -12,7 +12,7 @@ import { useStudio } from "./studio-provider";
 
 function saveLabel(hydrated: boolean, saveState: "idle" | "saved" | "error", updatedAt: string | null) {
   if (!hydrated) return "Loading your draft";
-  if (saveState === "error") return "Could not save in this browser";
+  if (saveState === "error") return "Changes are not saved";
   if (updatedAt) return `Saved ${formatSavedAt(updatedAt)}`;
   return "Nothing saved in this browser yet";
 }

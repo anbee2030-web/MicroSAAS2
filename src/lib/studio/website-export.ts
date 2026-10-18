@@ -1,5 +1,5 @@
 import { getCategory } from "./categories";
-import { formatPriceLabel, includedLines, toPhoneHref } from "./format";
+import { formatPriceLabel, includedLines, storefrontContactLinks } from "./format";
 import type { ServiceOffer, StudioDocument } from "./types";
 
 /**
@@ -10,9 +10,6 @@ export interface StorefrontWebsite {
   filename: string;
   html: string;
 }
-
-const SAFE_EMAIL = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
-const SAFE_TEL = /^tel:\+?\d{7,15}$/;
 
 const STYLES = `
 :root {
@@ -211,11 +208,12 @@ function descriptionHtml(value: string): string {
 }
 
 function contactHtml(offer: ServiceOffer): string {
+  const links = storefrontContactLinks(offer.contact);
   const rows = [
-    contactRow("Email", offer.contact.email, toExportMailto(offer.contact.email)),
-    contactRow("Phone", offer.contact.phone, toExportTel(offer.contact.phone)),
+    contactRow("Email", offer.contact.email, links.email),
+    contactRow("Phone", offer.contact.phone, links.phone),
     contactRow("Location", offer.contact.location, null),
-    contactRow("Website", offer.contact.website, toExportHttpsHref(offer.contact.website)),
+    contactRow("Website", offer.contact.website, links.website),
   ].filter((row): row is string => row !== null);
 
   if (rows.length === 0) return "";
@@ -231,10 +229,11 @@ function contactRow(label: string, value: string, href: string | null): string |
   const visible = cleanText(value).trim();
   if (!visible) return null;
   const text = escapeHtml(visible);
+  const external = href !== null && (href.startsWith("https://") || href.startsWith("http://"));
   const content =
     href === null
       ? text
-      : `<a href="${escapeHtml(href)}"${href.startsWith("https://") ? ' target="_blank" rel="noopener noreferrer"' : ""}>${text}</a>`;
+      : `<a href="${escapeHtml(href)}"${external ? ' target="_blank" rel="noopener noreferrer"' : ""}>${text}</a>`;
   return `<div class="row"><dt>${escapeHtml(label)}</dt><dd>${content}</dd></div>`;
 }
 
@@ -249,37 +248,6 @@ function firstLine(value: string): string {
     .split("\n")
     .map((line) => line.trim())
     .find(Boolean) ?? "";
-}
-
-export function toExportMailto(value: string): string | null {
-  const email = value.trim();
-  if (!SAFE_EMAIL.test(email)) return null;
-  return `mailto:${email}`;
-}
-
-export function toExportTel(value: string): string | null {
-  const href = toPhoneHref(value);
-  if (!href || !SAFE_TEL.test(href)) return null;
-  return href;
-}
-
-export function toExportHttpsHref(value: string): string | null {
-  const trimmed = value.trim();
-  if (!trimmed || /[\u0000-\u0020"'<>\\]/.test(trimmed)) return null;
-  const withProtocol = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
-  let url: URL;
-  try {
-    url = new URL(withProtocol);
-  } catch {
-    return null;
-  }
-  if (url.username || url.password) return null;
-  if (url.protocol !== "http:" && url.protocol !== "https:") return null;
-  if (!url.hostname.includes(".")) return null;
-  url.protocol = "https:";
-  const href = url.toString();
-  if (!href.startsWith("https://") || /[\s"'<>]/.test(href)) return null;
-  return href;
 }
 
 function websiteFilename(title: string): string {

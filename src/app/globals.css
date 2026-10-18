@@ -98,9 +98,14 @@ body {
     padding: 0 !important;
   }
 
-  .print-sheet {
+  .print-sheet,
+  .export-frame {
     border: none !important;
     box-shadow: none !important;
+  }
+
+  .export-frame {
+    height: 1600px !important;
   }
 }
 
